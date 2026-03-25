@@ -1,4 +1,4 @@
-This repo contains copyable, plugable Codex skills.
+This repo contains copyable, plugable Codex skills, that I have found useful in my work, will keep adding and updating as per usage.
 
 Each skill folder is structured for three audiences:
 

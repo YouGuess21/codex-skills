@@ -1,0 +1,7 @@
+interface:
+  display_name: "Feature Scaffold From Session"
+  short_description: "Build a feature scaffold from sessions"
+  default_prompt: "Use $feature-scaffold-from-session to turn prior Codex sessions into a new feature workspace scaffold."
+
+policy:
+  allow_implicit_invocation: false

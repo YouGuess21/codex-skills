@@ -1,0 +1,7 @@
+interface:
+  display_name: "Session Context Builder"
+  short_description: "Distill past sessions into context.md"
+  default_prompt: "Use $session-context-builder to extract durable context from selected past Codex sessions."
+
+policy:
+  allow_implicit_invocation: false

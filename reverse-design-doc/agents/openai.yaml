@@ -1,0 +1,7 @@
+interface:
+  display_name: "Reverse Design Doc"
+  short_description: "Reverse-engineer rev-design.md from code"
+  default_prompt: "Use $reverse-design-doc to generate a reverse-engineered design document from this codebase."
+
+policy:
+  allow_implicit_invocation: false

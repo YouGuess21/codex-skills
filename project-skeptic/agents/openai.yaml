@@ -1,0 +1,7 @@
+interface:
+  display_name: "Project Skeptic"
+  short_description: "Critique project plans and assumptions"
+  default_prompt: "Use $project-skeptic to challenge this project idea and expose weak assumptions."
+
+policy:
+  allow_implicit_invocation: true

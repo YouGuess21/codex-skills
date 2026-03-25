@@ -1,0 +1,7 @@
+interface:
+  display_name: "Auto Skill Suggest"
+  short_description: "Find reusable skills in past sessions"
+  default_prompt: "Use $auto-skill-suggest to analyze my past Codex sessions and propose reusable skills."
+
+policy:
+  allow_implicit_invocation: false
