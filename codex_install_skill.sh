@@ -12,8 +12,8 @@ show_help() {
   echo "  $0 <github-folder-url> [--here] [--global]"
   echo ""
   echo "Options:"
-  echo "  --here     Download into ./.codex/skills/<folder>"
-  echo "  --global   Download into ~/.codex/skills/<folder>"
+  echo "  --here     Install into ./.codex/skills/<folder>"
+  echo "  --global   Install into ~/.codex/skills/<folder>"
   echo "  -h, --help Show this help message"
   echo ""
   echo "Examples:"
@@ -54,56 +54,83 @@ if $HERE && $GLOBAL; then
   exit 1
 fi
 
-# ---- Check svn ----
-if ! command -v svn &> /dev/null; then
-  echo "❌ 'svn' is required but not installed."
+# ---- Check git ----
+if ! command -v git &> /dev/null; then
+  echo "❌ 'git' is required but not installed."
   echo ""
   echo "Install it using:"
-  echo "  Ubuntu/Debian: sudo apt install subversion"
-  echo "  macOS (brew):  brew install svn"
-  echo "  Arch:          sudo pacman -S subversion"
-  echo ""
+  echo "  Ubuntu/Debian: sudo apt install git"
+  echo "  macOS (brew):  brew install git"
+  echo "  Arch:          sudo pacman -S git"
   exit 1
 fi
 
-# ---- Convert GitHub URL → SVN URL ----
+# ---- Parse GitHub URL ----
+# Format:
 # https://github.com/user/repo/tree/branch/path
-# → https://github.com/user/repo/trunk/path
 
-SVN_URL=$(echo "$URL" | sed -E 's|https://github.com/([^/]+)/([^/]+)/tree/([^/]+)|https://github.com/\1/\2/trunk|')
+if [[ "$URL" =~ github.com/([^/]+)/([^/]+)/tree/([^/]+)/(.*) ]]; then
+  USER="${BASH_REMATCH[1]}"
+  REPO="${BASH_REMATCH[2]}"
+  BRANCH="${BASH_REMATCH[3]}"
+  PATH_PART="${BASH_REMATCH[4]}"
+else
+  echo "❌ Invalid GitHub folder URL"
+  exit 1
+fi
 
-# Extract folder name
-FOLDER_NAME=$(basename "$URL")
+REPO_URL="https://github.com/$USER/$REPO.git"
+FOLDER_NAME=$(basename "$PATH_PART")
 
 # ---- Destination ----
+ORIG_DIR=$(pwd)
+
+# Build absolute destination
 if $HERE; then
-  BASE="./.codex/skills"
+  BASE="$ORIG_DIR/.codex/skills"
 elif $GLOBAL; then
   BASE="$HOME/.codex/skills"
 else
-  BASE="."
+  BASE="$ORIG_DIR"
 fi
 
 DEST="$BASE/$FOLDER_NAME"
 
-# Create base directory if needed
 mkdir -p "$BASE"
 
 # ---- Prevent overwrite ----
 if [[ -e "$DEST" ]]; then
-  echo "⚠️  Skipping: '$DEST' already exists."
-  echo "   Nothing was modified."
+  echo " Skipping: '$DEST' already exists."
+  echo " Nothing was modified."
   exit 0
 fi
 
-# ---- Download ----
-echo "⬇️  Downloading:"
+# ---- Temp dir ----
+TMP_DIR=$(mktemp -d)
+
+cleanup() {
+  rm -rf "$TMP_DIR"
+}
+trap cleanup EXIT
+
+echo " Downloading:"
 echo "   $URL"
 echo "→ $DEST"
 echo ""
 
-svn export "$SVN_URL" "$DEST"
+# ---- Sparse clone ----
+git clone --depth 1 --filter=blob:none --sparse "$REPO_URL" "$TMP_DIR" >/dev/null 2>&1
+
+cd "$TMP_DIR"
+git sparse-checkout set "$PATH_PART" >/dev/null 2>&1
+git checkout "$BRANCH" >/dev/null 2>&1
+
+# ---- Move folder ----
+mkdir -p "$(dirname "$DEST")"
+mv "$TMP_DIR/$PATH_PART" "$DEST"
+
+cd - >/dev/null
 
 echo ""
-echo "✅ Done!"
-echo "📁 Saved to: $DEST"
+echo " Done!"
+echo " Saved to: $DEST"
