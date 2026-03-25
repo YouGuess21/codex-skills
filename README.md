@@ -13,3 +13,6 @@ Current skills:
 - `project-skeptic`
 - `reverse-design-doc`
 - `session-context-builder`
+
+Use codex_install_skill.sh with any of the skill-directory links in this repo or any repo!
+With no flag just to download, --help to add it to ./.codex/skills/ , --global to add it to ~/.codex/skills/
